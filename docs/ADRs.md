@@ -75,6 +75,48 @@ requires `torch>=2.8`.
 
 ---
 
+## ADR-005: Layer-freezing target and rehearsal mechanics
+
+**Status:** Accepted (Phase 5)
+**Date:** 2026-09-09
+
+### Context
+
+PRD requires regularization via "layer freezing on shared/early network layers"
+(full EWC is out of scope) and replay as "rehearsal-style periodic short
+retraining bursts", not a stored buffer. SB3 2.9's `MlpPolicy` builds the two
+64-unit hidden layers as **separate** `policy_net` and `value_net` branches —
+there is no literal shared trunk to freeze.
+
+### Decision
+
+- **Freeze target:** the first (input-projection) layer of each branch —
+  `mlp_extractor.policy_net.0.{weight,bias}` and
+  `mlp_extractor.value_net.0.{weight,bias}` (2 432 of 11 142 params ≈ 22%).
+  These are the earliest layers in each network, i.e. the closest proxy for
+  "shared/early" features under the PRD's simplified framework.
+- **Freeze mechanics:** set `requires_grad = False`, then *rebuild the Adam
+  optimizer* over the remaining trainable parameters only (explicit, safe).
+- **Verification:** every frozen parameter is snapshotted at freeze time and a
+  real `assert_unchanged()` (bit-identical `torch.equal`) runs after Task 2.
+- **Rehearsal:** carried out by re-using `agent.train_agent` to run short
+  retraining rounds on Task 1 between Task 2 rounds — i.e. genuine additional
+  gradient updates on the old task, interleaved, no stored transitions.
+- **Scheduler parity:** the Task 2 phase uses the exact environment-seed
+  scheme of `agent.train_team` (`(seed + 10) * 1000 + r * 100 + i`), so the
+  `none` condition in `memory.run_condition` is a drop-in baseline with
+  identical bookkeeping to Phase 4.
+
+### Consequences
+
+- Freezing removes ~22% of parameters from optimisation, visibly slowing
+  Task 2 adaptation for regularization conditions — measurable via
+  `score_task2` in the Phase 5 table.
+- Rehearsal adds compute proportional to the burst budget (config-driven in
+  Phase 7) but reuses the same sequential machinery.
+
+---
+
 ## ADR-004: Differentiate tasks by horizon/reward weight, not team size
 
 **Status:** Accepted (Phase 2)

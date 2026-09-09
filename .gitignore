@@ -20,3 +20,6 @@ __pycache__/
 # intentionally tracked. Trained policy zip files are storage-heavy transient
 # artifacts and stay untracked — they are reproducible from config + seed.
 outputs/*.zip
+
+# Local scratch logs
+/logs/

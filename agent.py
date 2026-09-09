@@ -233,7 +233,7 @@ def train_agent(
     return model
 
 
-def _frozen_teammates(
+def team_actors(
     cfg: TaskConfig, models: list[PPO | None]
 ) -> dict[str, object]:
     """Build ``{agent_name: actor}`` for every agent with a trained model.
@@ -288,7 +288,7 @@ def train_team(
         for i in range(cfg.num_agents):
             env_seed = seed * 1_000 + r * 100 + i
             assert env_seed < 2**32
-            teammates = _frozen_teammates(cfg, models)
+            teammates = team_actors(cfg, models)
             models[i] = train_agent(
                 cfg,
                 agent_index=i,
@@ -398,7 +398,7 @@ def _phase3_main() -> int:
         save_model(model, f"outputs/agent_{i}_{cfg.name}")
     print("Saved outputs/agent_{0,1,2}_spread_3a_50c.zip")
 
-    trained = _frozen_teammates(cfg, models)
+    trained = team_actors(cfg, models)
     result_trained = evaluate(trained, cfg, episodes=20)
     result_random = evaluate(None, cfg, episodes=20)
     print(f"\nMean episodic reward (trained team): {result_trained.mean_reward:+.4f}"
@@ -447,7 +447,7 @@ def _phase4_main() -> int:
         print(f"Training team on Task 1 {task1.name}...")
         models = train_team(task1, timesteps=timesteps, seed=seed, rounds=rounds)
 
-        trained = _frozen_teammates(task1, models)
+        trained = team_actors(task1, models)
         score_before = evaluate(trained, task1).mean_reward
         print(f"score_before (Task 1, post-task1): {score_before:+.4f}")
 
@@ -457,7 +457,7 @@ def _phase4_main() -> int:
             task2, timesteps=timesteps, seed=seed + 10, rounds=rounds, models=models
         )
 
-        trained = _frozen_teammates(task1, models)
+        trained = team_actors(task1, models)
         score_after = evaluate(trained, task1).mean_reward
         score_task2 = evaluate(trained, task2).mean_reward
         random_task2 = evaluate(None, task2).mean_reward
