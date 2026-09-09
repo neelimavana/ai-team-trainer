@@ -1,0 +1,13 @@
+stage,task,method,seed,score,forgetting
+after_task1,task1,none,0,-45.6053,0.1834
+after_task2,task1,none,0,-45.7887,0.1834
+after_task2,task2,none,0,-21.1523,
+after_task1,task1,experience_replay,0,-47.2312,-3.237
+after_task2,task1,experience_replay,0,-43.9942,-3.237
+after_task2,task2,experience_replay,0,-22.2106,
+after_task1,task1,regularization,0,-47.1409,-0.7313
+after_task2,task1,regularization,0,-46.4096,-0.7313
+after_task2,task2,regularization,0,-22.7149,
+after_task1,task1,both,0,-50.6066,-3.4157
+after_task2,task1,both,0,-47.1909,-3.4157
+after_task2,task2,both,0,-22.9692,
