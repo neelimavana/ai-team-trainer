@@ -253,8 +253,9 @@ def train_team(
     timesteps: int,
     seed: int,
     rounds: int = 5,
+    models: list[PPO] | None = None,
 ) -> list[PPO]:
-    """Train a whole team of independent policies on ``cfg``.
+    """Train (or continue training) a team of independent policies on ``cfg``.
 
     The team is trained in alternating rounds (independent learners): each
     round, agent ``i`` trains for ``timesteps / rounds`` steps while the other
@@ -267,15 +268,22 @@ def train_team(
         seed: Base RNG seed; each (agent, round) gets a distinct sub-seed so
             training is reproducible but not degenerate.
         rounds: Number of alternating training rounds.
+        models: Existing policies to *continue training on* (Phase 4's
+            same-model sequential constraint — never a fresh model). When
+            ``None``, fresh policies are created.
 
     Returns:
-        List of one trained PPO model per agent (index-aligned).
+        List of one PPO model per agent (index-aligned with ``models``).
     """
     if rounds < 1:
         raise ValueError("rounds must be >= 1")
+    if models is not None and len(models) != cfg.num_agents:
+        raise ValueError(
+            f"Got {len(models)} models for a {cfg.num_agents}-agent task."
+        )
     per_round = max(1, timesteps // rounds)
 
-    models = [None] * cfg.num_agents
+    models = list(models) if models is not None else [None] * cfg.num_agents
     for r in range(rounds):
         for i in range(cfg.num_agents):
             env_seed = seed * 1_000 + r * 100 + i
@@ -410,5 +418,85 @@ def _phase3_main() -> int:
     return 0
 
 
+def _phase4_main() -> int:
+    """Phase 4: sequential Task1->Task2 training and forgetting measurement.
+
+    For each seed: train a fresh team on Task 1, record ``score_before``,
+    continue training the *same model objects* on Task 2, record
+    ``score_after`` (Task 1) and ``score_task2``, then log
+    ``forgetting = score_before - score_after`` verbatim (values <= 0 are
+    valid and must not be treated as bugs).
+    """
+    from env import TASK_CONFIGS
+
+    task1 = TASK_CONFIGS["spread_3a_50c"]
+    task2 = TASK_CONFIGS["spread_3a_25c"]
+    timesteps = 50_000
+    rounds = 5
+    seeds = [0, 1]
+
+    print("=" * 62)
+    print(f"Phase 4 — sequential training {task1.name} -> {task2.name}")
+    print("=" * 62)
+
+    results = []
+    for seed in seeds:
+        print(f"\n--- seed {seed} ---")
+        set_global_seed(seed)
+
+        print(f"Training team on Task 1 {task1.name}...")
+        models = train_team(task1, timesteps=timesteps, seed=seed, rounds=rounds)
+
+        trained = _frozen_teammates(task1, models)
+        score_before = evaluate(trained, task1).mean_reward
+        print(f"score_before (Task 1, post-task1): {score_before:+.4f}")
+
+        print(f"Continuing the SAME team on Task 2 {task2.name}...")
+        # Same model objects: train_team(..., models=models) continues them.
+        models = train_team(
+            task2, timesteps=timesteps, seed=seed + 10, rounds=rounds, models=models
+        )
+
+        trained = _frozen_teammates(task1, models)
+        score_after = evaluate(trained, task1).mean_reward
+        score_task2 = evaluate(trained, task2).mean_reward
+        random_task2 = evaluate(None, task2).mean_reward
+
+        forgetting = score_before - score_after
+        print(f"score_after  (Task 1, post-task2): {score_after:+.4f}")
+        print(f"score_task2  (Task 2, post-task2): {score_task2:+.4f}  "
+              f"(random baseline: {random_task2:+.4f})")
+        print(f"forgetting (score_before - score_after) = {forgetting:+.4f}")
+
+        if not all(
+            np.isfinite(x)
+            for x in (score_before, score_after, score_task2, forgetting)
+        ):
+            print("FAIL: a measured score is non-finite")
+            return 1
+        if score_task2 <= random_task2:
+            print(f"FAIL: Task 2 was not learned "
+                  f"({score_task2:.4f} <= {random_task2:.4f})")
+            return 1
+        results.append(forgetting)
+        # Verbose seed-line summary for later phases to parse.
+        print(f"[log] seed={seed} method=none score_before={score_before:.4f} "
+              f"score_after={score_after:.4f} score_task2={score_task2:.4f} "
+              f"forgetting={forgetting:.4f}")
+
+    print(f"\nForgetting across seeds: {[f'{f:+.4f}' for f in results]}")
+    if max(results) > 0 and min(results) <= 0:
+        print("  Note: direction is NOT consistent across seeds (mixed sign).")
+    else:
+        print(f"  Consistent direction: all {'positive' if results[0] > 0 else 'non-positive'}.")
+    print("PHASE 4 PASSED")
+    return 0
+
+
 if __name__ == "__main__":
-    raise SystemExit(_phase3_main())
+    import sys
+
+    phase = sys.argv[1] if len(sys.argv) > 1 else "4"
+    if phase == "3":
+        raise SystemExit(_phase3_main())
+    raise SystemExit(_phase4_main())
