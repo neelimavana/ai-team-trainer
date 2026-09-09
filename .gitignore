@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtual environment (uv)
+.venv/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Runtime artifacts
+# NOTE: scores.csv / forgetting_report.png are required deliverables and are
+# intentionally tracked. Trained policy zip files are storage-heavy transient
+# artifacts and stay untracked — they are reproducible from config + seed.
+outputs/*.zip
