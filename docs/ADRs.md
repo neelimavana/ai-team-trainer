@@ -75,6 +75,42 @@ requires `torch>=2.8`.
 
 ---
 
+## ADR-004: Differentiate tasks by horizon/reward weight, not team size
+
+**Status:** Accepted (Phase 2)
+**Date:** 2026-09-09
+
+### Context
+
+Phases.md Phase 4 requires continuing training the **same model object** on
+Task 2 after Task 1. A policy network's input layer is fixed at build time, so
+its observation dimensionality must be identical across tasks. MPE
+simple_spread uses `num_landmarks == N`, and per-agent observations scale with
+`N` (landmarks) and `N - 1` (other agents): changing the team size changes
+observation size and breaks same-model continuation. The PRD explicitly allows
+differentiating tasks by *episode length*.
+
+### Decision
+
+Fix the team size at `N = 3` for all tasks and differentiate through:
+
+- `max_cycles` (episode length), and
+- `local_ratio` (cooperative vs collision-avoidance reward weighting).
+
+Canonical tasks: `spread_3a_50c` (50c), `spread_3a_25c` (25c), optional
+`spread_3a_75c` (75c). Observation dimension is `6N = 18` for every task.
+
+### Consequences
+
+- A single MLP policy (fixed 18-dim input) can be trained sequentially across
+  all tasks, satisfying Phase 4's same-model constraint.
+- Task 1 vs Task 2 genuinely differ (25 vs 50 frames), confirmed by the
+  `env.py` smoke test rather than assumed.
+- Team-size variation across tasks would additionally require per-N model sets
+  and is out of scope for this analysis.
+
+---
+
 ## ADR-003: Replace `pettingzoo[mpe]` with the `mpe2` package
 
 **Status:** Accepted (Phase 1)
