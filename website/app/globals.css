@@ -1,0 +1,178 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------
+   AI Team Trainer research site — light theme only (white).
+   Tailwind v4 tokens are declared via @theme.
+   --------------------------------------------------------------- */
+
+@theme inline {
+  --color-background: #ffffff;
+  --color-foreground: #0b1220;
+  --color-muted: #f8fafc;
+  --color-muted-foreground: #5b6474;
+  --color-card: #ffffff;
+  --color-card-foreground: #0b1220;
+  --color-border: #e5eaf2;
+  --color-input: #e5eaf2;
+  --color-ring: #6366f1;
+
+  --color-primary: #4f46e5;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #eef2ff;
+  --color-secondary-foreground: #4338ca;
+  --color-accent: #f0f6ff;
+  --color-accent-foreground: #1e40af;
+  --color-destructive: #e11d48;
+  --color-destructive-foreground: #ffffff;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Subtle scrollbar that stays in the light theme */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+::-webkit-scrollbar-thumb {
+  background: #dbe1ec;
+  border-radius: 999px;
+  border: 2px solid #ffffff;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c3cbd9;
+}
+
+::selection {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+/* ---------- bespoke animation tokens (light-theme hues) ---------- */
+@theme {
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-float-slow: float 11s ease-in-out infinite;
+  --animate-aurora: aurora 18s ease infinite alternate;
+  --animate-pulse-soft: pulse-soft 2.6s ease-in-out infinite;
+  --animate-dash: dash 2.4s linear infinite;
+  --animate-spin-slow: spin 9s linear infinite;
+  --animate-accordion-down: accordion-down 0.25s ease-out;
+  --animate-accordion-up: accordion-up 0.25s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-14px);
+    }
+  }
+
+  @keyframes aurora {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  @keyframes pulse-soft {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.55;
+      transform: scale(0.96);
+    }
+  }
+
+  @keyframes dash {
+    to {
+      stroke-dashoffset: -24;
+    }
+  }
+}
+
+/* ---------- helpers ---------- */
+.bg-grid-slate {
+  background-image:
+    linear-gradient(to right, rgba(100, 116, 139, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(100, 116, 139, 0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.bg-dots {
+  background-image: radial-gradient(
+    rgba(99, 102, 241, 0.16) 1.1px,
+    transparent 1.1px
+  );
+  background-size: 18px 18px;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.paper-ring {
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 8px 24px -12px rgba(15, 23, 42, 0.12);
+}
+
+.paper-lift {
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s ease;
+}
+.paper-lift:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.05),
+    0 24px 48px -16px rgba(79, 70, 229, 0.28);
+}
