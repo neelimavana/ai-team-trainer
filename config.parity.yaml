@@ -1,0 +1,15 @@
+# Phase 7 parity check config #1: baseline only (matches the hardcoded call).
+agents: 3
+memory_method: none
+episodes: 20
+rounds: 5
+replay_budget_per_burst: 2500
+seeds: [0]
+output_dir: outputs
+tasks:
+  - name: task1
+    env: spread_3a_50c
+    timesteps: 50000
+  - name: task2
+    env: spread_3a_25c
+    timesteps: 50000

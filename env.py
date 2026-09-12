@@ -29,10 +29,20 @@ capture criterion (mpe2 ``CAPTURE_RADIUS`` = 0.1).
 
 from __future__ import annotations
 
+import os
 import random
 
 import numpy as np
 from mpe2.simple_spread_v3 import parallel_env as _mpe2_parallel_env
+
+#: Single-threaded BLAS is load-bearing for exact reproducibility: torch's
+#: multithreaded (MKL-DNN) reductions reorder across processes, so identical
+#: seeds produced different results between runs (caught by the Phase 7 parity
+#: check). These must be set before torch's runtime initialises its thread
+#: pools. env.py is imported before torch anywhere in the pipeline, so doing it
+#: here is early enough; set_global_seed() also pins threads again defensively.
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
 
 #: Distance below which an agent "occupies" a landmark (mpe2 capture radius).
 CAPTURE_RADIUS = 0.1
@@ -161,7 +171,29 @@ def set_global_seed(seed: int) -> None:
     random.seed(seed)
     import torch
 
+    torch.set_num_threads(1)
+    torch.use_deterministic_algorithms(True)
     torch.manual_seed(seed)
+
+
+def seed_env_action_spaces(env, base_seed: int) -> None:
+    """Seed every agent's action-space RNG for deterministic random sampling.
+
+    gymnasium ``Space.sample()`` defaults to an entropy-seeded
+    ``np.random.default_rng()`` — so teammates that act randomly during early
+    training rounds (``agent.py``) sample differently in every process. That
+    single unseeded RNG broke exact cross-process reproducibility (caught by
+    the Phase 7 parity check). Seeding each agent's space with a distinct,
+    repeatable sub-seed restores bit-exact determinism.
+    """
+    names = list(getattr(env, "possible_agents", None) or [])
+    if not names:
+        names = list(env.agents)
+    for i, name in enumerate(names):
+        try:
+            env.action_space(name).seed(base_seed + i)
+        except AttributeError:  # pragma: no cover - unusual space with no seed
+            continue
 
 
 def get_world(env) -> "object":

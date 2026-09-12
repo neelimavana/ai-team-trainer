@@ -19,7 +19,13 @@ import gymnasium
 import numpy as np
 from stable_baselines3 import PPO
 
-from env import TaskConfig, make_env, set_global_seed, team_success
+from env import (
+    TaskConfig,
+    make_env,
+    seed_env_action_spaces,
+    set_global_seed,
+    team_success,
+)
 
 #: Extra policy architecture: two hidden layers, 64 neurons each (PRD).
 POLICY_NET_ARCH = [64, 64]
@@ -86,6 +92,9 @@ class SingleAgentWrapper(gymnasium.Env):
         self._episode = 0
         self._agents: list[str] = []
         self._last_obs: dict = {}
+        # Deterministic sampling for teammates without a policy: gymnasium's
+        # Space.sample() is entropy-based unless seeded (see env.py).
+        seed_env_action_spaces(env, self._seed)
 
     def reset(self, *, seed: int | None = None, options: dict | None = None):
         """Reset the team and return ``(obs, info)`` for the learning agent.
@@ -319,6 +328,7 @@ def evaluate(
     env = make_env(cfg)
     agent_names = [f"agent_{i}" for i in range(cfg.num_agents)]
     policies = policies if policies is not None else {}
+    seed_env_action_spaces(env, seed)
 
     rewards: dict[str, list[float]] = {a: [] for a in agent_names}
     coverage: list[float] = []

@@ -159,6 +159,7 @@ def run_condition(
     seed: int,
     rounds: int = 4,
     replay_budget_per_burst: int = 2500,
+    timesteps_task2: int | None = None,
 ) -> ConditionResult:
     """Run the full sequential pipeline under one mitigation condition.
 
@@ -173,10 +174,12 @@ def run_condition(
     Args:
         method: One of :data:`METHODS`.
         task1 / task2: First-learned and second-learned task.
-        timesteps: Total timesteps per agent for each single-task phase.
+        timesteps: Total timesteps per agent for the ``task1`` phase.
         seed: Base RNG seed.
         rounds: Number of alternating per-agent rounds per task phase.
         replay_budget_per_burst: Per-agent timesteps of each rehearsal burst.
+        timesteps_task2: Per-agent budget for the ``task2`` phase; defaults to
+            ``timesteps`` (per-task budgets come from ``config.yaml``).
     """
     validate_method(method)
     if observation_dim(task1) != observation_dim(task2):
@@ -199,14 +202,14 @@ def run_condition(
 
     # 3) Sequential Task 2 training with optional interleaved rehearsal.
     use_replay = method in ("experience_replay", "both")
-    per_round = max(1, timesteps // max(1, rounds))
+    per_round_task2 = max(1, (timesteps_task2 or timesteps) // max(1, rounds))
     for r in range(rounds):
         for i in range(len(models)):
             env_seed = (seed + 10) * 1_000 + r * 100 + i
             assert env_seed < 2**32
             teammates = team_actors(task2, models)
             models[i] = train_agent(
-                task2, i, per_round, env_seed, teammates, models[i]
+                task2, i, per_round_task2, env_seed, teammates, models[i]
             )
         if use_replay and r < rounds - 1:
             # Fixed non-overlapping seed block so rehearsal is reproducible

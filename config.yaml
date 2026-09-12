@@ -1,0 +1,46 @@
+# -----------------------------------------------
+# AI Team Trainer — experiment configuration
+# (PRD FR7: ALL run parameters live here; editing
+#  this file is the only thing needed between runs)
+# -----------------------------------------------
+
+# Number of cooperative agents (PRD: 2-4). Must match the num_agents of the
+# task environments below (ADR-004 fixes the team size so observation
+# dimensionality stays constant across tasks).
+agents: 3
+
+# Mitigation method for the sequential (continual-learning) sweep:
+#   none               -> no mitigation (baseline)
+#   experience_replay  -> rehearsal-style bursts on Task 1 during Task 2
+#   regularization     -> early-layer freezing after Task 1 (EWC proxy)
+#   both               -> experience replay + regularization together
+#   all                -> run all four modes and produce the comparison table
+memory_method: all
+
+# Number of evaluation episodes per metric (PRD sec. 11: mean over 20).
+episodes: 20
+
+# Alternating per-agent training rounds per task phase.
+rounds: 5
+
+# Experience replay: short per-agent rehearsal burst on Task 1, applied after
+# every Task 2 round (only has an effect for the replay/both modes).
+replay_budget_per_burst: 2500
+
+# Runs are repeated across each seed; results are then reported as
+# mean +/- standard deviation (PRD FR8 / sec. 11).
+seeds: [0]
+
+# Where scores.csv, forgetting_report.png and model files are written.
+output_dir: outputs
+
+# Sequential task list. Exactly 2 tasks in this release (3-task chaining is
+# flagged as future work in docs). `env` must name an entry of env.TASK_CONFIGS.
+# Tasks share the team size but differ in horizon / reward weight (ADR-004).
+tasks:
+  - name: task1
+    env: spread_3a_50c
+    timesteps: 50000
+  - name: task2
+    env: spread_3a_25c
+    timesteps: 50000

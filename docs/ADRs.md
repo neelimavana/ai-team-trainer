@@ -75,6 +75,43 @@ requires `torch>=2.8`.
 
 ---
 
+## ADR-006: Config-driven pipeline; 3-task chaining flagged
+
+**Status:** Accepted (Phase 7)
+**Date:** 2026-09-09
+
+### Context
+
+PRD G1/FR1 allow "2-3 cooperative tasks". The sequential machinery built in
+Phases 4-5 (`memory.run_condition`) and its reporting schema
+(`ConditionResult`, the stage/task CSV layout) are shaped around exactly two
+tasks: learn task1 → learn task2 → measure Backward Transfer on task1. A third
+task would require generalising the measurement to "evaluate every earlier
+task after each new task" and rippling through `ConditionResult`, `report.py`
+and the plot — a real design change, not a config tweak.
+
+### Decision
+
+- `config.py` validates that the `tasks` list contains exactly 2 entries in
+  this release, and raises a clear `ConfigError` otherwise.
+- All run parameters are centralized in `config.yaml` (PRD FR7): agent count,
+  per-task `env` + `timesteps`, `memory_method` (incl. the `all` full
+  comparison sweep), `rounds`, evaluation `episodes`,
+  `replay_budget_per_burst`, `seeds`, `output_dir`.
+- **Scope flag (per Phases.md "flag it rather than silently adding it"):**
+  3-task sequential chaining is declared future work. The architecture
+  (per-method per-seed `run_condition` rows) is designed so a 3rd task can be
+  appended without redesigning the training core; only the measurement and
+  report schema need extension.
+
+### Consequences
+
+- `config.yaml` task lists are enforced at exactly 2 tasks today.
+- The "2-3 tasks" PRD goal is partially met (2-task sweeps fully supported);
+  the gap is explicitly tracked rather than silently ignored.
+
+---
+
 ## ADR-005: Layer-freezing target and rehearsal mechanics
 
 **Status:** Accepted (Phase 5)
