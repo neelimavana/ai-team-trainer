@@ -1,0 +1,58 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="arch-net" name="Agent network">
+    <mxGraphModel dx="1100" dy="720" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="720" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="obs" value="Observation&#10;18 dims · discrete 5&#10;(partial obs · local_ratio 0.5)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF2FF;strokeColor=#6366F1;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="290" width="160" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="vb" value="Value branch (separate net)" style="text;html=1;align=center;fontSize=11;fontStyle=5;fontColor=#475569;" vertex="1" parent="1">
+          <mxGeometry x="560" y="70" width="200" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="pb" value="Policy branch (separate net)" style="text;html=1;align=center;fontSize=11;fontStyle=5;fontColor=#475569;" vertex="1" parent="1">
+          <mxGeometry x="560" y="420" width="200" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="v1" value="Linear 64 + ReLU&#10;[ FROZEN ] 1,216 params" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FBF3C4;strokeColor=#B45309;fontColor=#78350F;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="300" y="90" width="180" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="v2" value="Linear 64 + ReLU" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="300" y="190" width="180" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p1" value="Linear 64 + ReLU&#10;[ FROZEN ] 1,216 params" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FBF3C4;strokeColor=#B45309;fontColor=#78350F;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="300" y="420" width="180" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2" value="Linear 64 + ReLU" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="300" y="520" width="180" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="v3" value="Linear 1&#10;state value" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="580" y="120" width="120" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3" value="Linear 5&#10;action logits" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#6366F1;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="580" y="460" width="120" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="tot" value="11,142 params total · 2,432 frozen (≈22%)&#10;CPU-only · Adam rebuilt over unfrozen after T1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF2FF;strokeColor=#94A3B8;fontColor=#1E293B;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="330" y="640" width="420" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="obs" target="v1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="obs" target="p1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;" edge="1" parent="1" source="v1" target="v2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;" edge="1" parent="1" source="v2" target="v3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;" edge="1" parent="1" source="p1" target="p2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;" edge="1" parent="1" source="p2" target="p3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

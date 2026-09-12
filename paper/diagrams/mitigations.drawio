@@ -1,0 +1,37 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="mitigations" name="Mitigation conditions (seed 0)">
+    <mxGraphModel dx="1100" dy="560" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="560" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="h1" value="Task-1 forgetting after Task-2 training · seed 0 · positive = forgetting" style="text;html=1;align=center;fontSize=14;fontStyle=1;fontColor=#334155;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="250" y="30" width="600" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="n" value="1 · No mitigation&#10;plain sequential transfer (baseline to beat)&#10;&#10;forgetting  =  +0.18" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#94A3B8;fontColor=#1E293B;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="110" width="230" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="r" value="2 · Experience replay&#10;interleaved Task-1 bursts, 2,500 steps/agent&#10;(on-policy rollouts, policy-consistent)&#10;&#10;forgetting  =  −3.24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7E6;strokeColor=#F59E0B;fontColor=#92400E;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="310" y="110" width="240" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="f" value="3 · Early-layer freezing&#10;pin 2,432 params (≈22%) after Task 1&#10;torch.equal verified · EWC-style proxy&#10;&#10;forgetting  =  −0.73" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;fontColor=#4C1D95;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="570" y="110" width="240" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="b" value="4 · Replay + regularization&#10;both mechanisms combined&#10;&#10;forgetting  =  −3.42" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF2FF;strokeColor=#4F46E5;fontColor=#1E293B;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="830" y="110" width="220" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="notes" value="Replay &amp; both: Task 1 post-transfer score turned strongly positive (lower forgetting).&#10;Combined ≈ replay alone ⇒ rehearsal is the dominant mechanism in teams." style="text;html=1;align=center;whiteSpace=wrap;fontSize=11;fontColor=#475569;" vertex="1" parent="1">
+          <mxGeometry x="120" y="360" width="840" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;" edge="1" parent="1" source="n" target="r">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;" edge="1" parent="1" source="r" target="f">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;" edge="1" parent="1" source="f" target="b">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

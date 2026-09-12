@@ -1,0 +1,40 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="forgetting" name="Forgetting measurement protocol">
+    <mxGraphModel dx="1100" dy="520" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="520" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="tr1" value="Train Task 1&#10;5 rounds · 50k/agent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF2FF;strokeColor=#6366F1;fontColor=#1E293B;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="200" width="190" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="sb" value="score_before&#10;= eval Task 1 · 20 episodes&#10;(after Task-1 training)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="310" y="190" width="190" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="tr2" value="Train Task 2&#10;5 rounds · 50k/agent&#10;same models · 100% reuse&#10;+ mitigations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#8B5CF6;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="580" y="160" width="200" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="sa" value="score_after&#10;= eval Task 1 · 20 episodes&#10;same evaluation code" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#94A3B8;fontColor=#1E293B;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="860" y="190" width="190" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="formula" value="forgetting = score_before − score_after&#10;positive ⇒ forgetting · negative ⇒ transfer helped" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDE68A;strokeColor=#B45309;fontColor=#78350F;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="310" y="390" width="470" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="tr1" target="sb">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="sb" target="tr2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="tr2" target="sa">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#B45309;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="sb" target="formula">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#94A3B8;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="sa" target="formula">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
