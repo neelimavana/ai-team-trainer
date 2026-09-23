@@ -28,8 +28,9 @@ rounds: 5
 replay_budget_per_burst: 2500
 
 # Runs are repeated across each seed; results are then reported as
-# mean +/- standard deviation (PRD FR8 / sec. 11).
-seeds: [0]
+# mean +/- standard deviation (PRD FR8 / sec. 11). PRD success criteria
+# requires at least 3 seeds.
+seeds: [0, 1, 2]
 
 # Where scores.csv, forgetting_report.png and model files are written.
 output_dir: outputs
