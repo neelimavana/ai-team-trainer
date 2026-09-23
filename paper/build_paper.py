@@ -369,11 +369,13 @@ p(
     "observable variant of **simple_spread** on a 50-frame task, then continues training on a "
     "shorter 25-frame task with **100% parameter reuse**. We define a clean before/after protocol "
     "in which forgetting is the drop in Task-1 score measured by identical evaluation code at both "
-    "ends of transfer. Against the plain baseline (small but positive forgetting of +0.18 mean "
-    "reward), two lightweight mechanisms — short interleaved *experience-replay* bursts and "
-    "*early-layer freezing* (an EWC-style, matrix-free proxy) — both preserve old-task behaviour, "
-    "achieving negative forgetting (−3.24 and −0.73 respectively). Both mechanisms combined reach "
-    "−3.42. The project is deliberately reproducible: single-thread BLAS, fully seeded RNGs, and a "
+    "ends of transfer, averaged over **3 random seeds** and reported as mean ± std. Against the "
+    "plain baseline (−2.24 ± 2.39 mean-reward forgetting), *experience-replay* bursts sharply "
+    "increase forgetting (−6.25 ± 2.99, i.e. Task-2 training strongly improved Task 1 further), "
+    "while *early-layer freezing* (an EWC-style, matrix-free proxy) yields the most stable, "
+    "lowest-variance outcome (−1.22 ± 0.22). The combined condition (−2.15 ± 2.07) tracks the "
+    "baseline closely, suggesting the two mechanisms partially cancel rather than compound in this "
+    "setup. The project is deliberately reproducible: single-thread BLAS, fully seeded RNGs, and a "
     "config-driven pipeline reproduce experimental output bit-exactly across processes."
 )
 p(
@@ -418,7 +420,7 @@ p("**Contributions.**", size=11)
 for line in [
     "A clean before/after forgetting protocol for cooperative teams, with a signed definition (positive = forgetting) and identical evaluation at both ends.",
     "A phase-gated experimental plan (single-agent baseline → sequential transfer → four-condition mitigation comparison) whose results are committed as data.",
-    "Evidence that lightweight, technology-transferable mechanisms — interleaved replay and early-layer freezing — measurably reverse forgetting in teams, without a GPU or a large model.",
+    "Evidence, averaged over 3 seeds, that lightweight, technology-transferable mechanisms — interleaved replay and early-layer freezing — measurably shift forgetting in teams, without a GPU or a large model.",
     "Bit-exact reproducibility: single-thread BLAS, fully seeded RNGs including the environment action spaces, and a config-driven pipeline verified by an automatic hardcoded-vs-config parity check.",
 ]:
     doc.add_paragraph(style="List Number").add_run(line)
@@ -513,7 +515,7 @@ add_table(
         ["4 · Replay + regularization", "both mechanisms applied together"],
     ],
 )
-figure("mitigations", "Figure 4. Mitigation comparison at seed 0. Negative forgetting means Task-2 training improved Task 1. Source: diagrams/mitigations.drawio")
+figure("mitigations", "Figure 4. Mitigation comparison, mean across 3 seeds. Negative forgetting means Task-2 training improved Task 1. Source: diagrams/mitigations.drawio")
 
 h("4.4 Hyperparameters and reproducibility", 2)
 p(
@@ -536,74 +538,82 @@ p(
 )
 h("5.2 Transfer across seeds (Phase 4)", 2)
 p(
-    "Sequential transfer without mitigation is *signed-unstable at low budget*: seed 0 improved "
-    "Task 1 (−2.31 forgetting, i.e. transfer helped), while seed 1 caused genuine forgetting "
-    "(+2.04). This seed-level sign flip is reported as-is and motivates the need for mechanisms "
-    "that force the outcome toward the favourable side."
+    "Sequential transfer without mitigation is *signed-unstable at low budget*: seeds 0 and 2 "
+    "improved Task 1 (−4.39 and −3.43 forgetting respectively, i.e. transfer helped), while seed 1 "
+    "caused genuine forgetting (+1.09). This seed-level sign flip is reported as-is and is the "
+    "reason all Phase-5/6 mitigation results below are aggregated over 3 seeds rather than read off "
+    "a single run."
 )
 h("5.3 Mitigation comparison (Phases 5–6)", 2)
-p("Each condition runs at seed 0 with the full before/after protocol. Higher score_after and more negative forgetting are better.")
+p("Each condition runs across seeds 0, 1, 2 with the full before/after protocol; values are mean ± std. Higher score_after and more negative forgetting are better.")
 add_table(
     [
         ["Method", "score_before", "score_after", "Task 2", "forgetting"],
-        ["No mitigation", "-45.6053", "-45.7887", "-21.1523", "+0.1834"],
-        ["Experience replay", "-47.2312", "-43.9942", "-22.2106", "-3.2370"],
-        ["Early-layer freezing", "-47.1409", "-46.4096", "-22.7149", "-0.7313"],
-        ["Replay + regularization", "-50.6066", "-47.1909", "-22.9692", "-3.4157"],
+        ["No mitigation", "-44.21 ± 0.46", "-41.97 ± 1.94", "-21.55 ± 0.39", "-2.24 ± 2.39"],
+        ["Experience replay", "-44.21 ± 0.46", "-37.96 ± 2.53", "-20.39 ± 1.18", "-6.25 ± 2.99"],
+        ["Early-layer freezing", "-44.21 ± 0.46", "-42.99 ± 0.43", "-22.05 ± 1.13", "-1.22 ± 0.22"],
+        ["Replay + regularization", "-44.21 ± 0.46", "-42.06 ± 2.06", "-21.83 ± 0.92", "-2.15 ± 2.07"],
     ],
     header=True,
     right_cols=[1, 2, 3, 4],
 )
-ol = doc.add_paragraph(style="List Number").add_run("Forgetting is real but small on this setup. ")
-doc.add_paragraph(style="List Number").add_run(
-    "The no-mitigation baseline costs +0.18 mean episodic reward on Task 1, consistent with the Phase-4 instability."
+p(
+    "score_before is identical across methods within a seed (it is measured before any mitigation "
+    "branches apply), so its cross-method variation above is entirely seed variance."
 )
-p("", size=2)
 for item in [
-    "**Replay is the strongest single mechanism.** Interleaved bursts of 2,500 rehearsal steps per agent turned post-transfer Task 1 strongly positive: −3.24 forgetting, meaning Task-2 training *improved* Task 1.",
-    "**Freezing alone is gentle but positive.** −0.73 forgetting confirms that protecting the early shared layers curbs interference even without rehearsal.",
-    "**Combined, the mechanisms are additive in effect.** −3.42 forgetting with no degradation in Task-2 score (−22.97 vs −21.15 baseline).",
+    "**Replay is the strongest — and most variable — single mechanism.** Interleaved bursts of 2,500 rehearsal steps per agent push mean forgetting most negative (−6.25 ± 2.99), meaning Task-2 training *improved* Task 1 the most on average, but with the widest spread across seeds of any condition.",
+    "**Freezing alone is the most reliable.** −1.22 ± 0.22 forgetting has by far the lowest variance of the four conditions — protecting the early shared layers gives a small, consistent benefit rather than a large, noisy one.",
+    "**Combined, the mechanisms do not compound — they roughly cancel.** −2.15 ± 2.07 sits close to the no-mitigation baseline (−2.24 ± 2.39), suggesting freezing's stability and replay's magnitude do not simply add when applied together on this setup.",
 ]:
     doc.add_paragraph(style="List Bullet").add_run(item)
 p(
-    "Caveat we state plainly: with 4 conditions × 1 seed, these magnitudes are indicative, not "
-    "statistically generalized. The story the data does support — with bit-exact reproducibility — "
-    "is *directional*: replay and freezing reliably steer long-term team retention in the "
-    "favourable direction."
+    "Caveat we state plainly: even at 3 seeds, per-condition standard deviations are comparable in "
+    "size to the means for the replay and combined conditions, so those two magnitudes should be "
+    "read as directionally suggestive rather than tightly estimated. The freezing condition's low "
+    "variance is the strongest statistical claim this run supports."
 )
 
 # ---- 6. Discussion -------------------------------------------------------- #
 h("6. Discussion and Limitations", 1)
 p(
-    "The result that replay reverses the sign of forgetting — and that the combined condition "
-    "nearly matches replay alone — suggests rehearsal is the dominant mechanism in a cooperative "
-    "team, consistent with rehearsal's primacy in single-agent studies. One nuance is that the "
-    "replay bursts rehearse *Task 1* while Task 2 learning continues, which doubles as a "
+    "Replay produces the largest mean improvement but also the largest spread, while freezing "
+    "produces a smaller, far more consistent one — and the two together do not compound, landing "
+    "close to the unmitigated baseline. A plausible reading is that replay's benefit is itself "
+    "seed-sensitive (it rehearses whichever Task-1 policy state a given seed happened to reach), "
+    "so combining it with freezing does not simply add a second, independent source of protection; "
+    "it interacts with the same seed-dependent training dynamics that make replay noisy on its own. "
+    "The replay bursts rehearse *Task 1* while Task 2 learning continues, which doubles as a "
     "stabilizer of teammate coordination: rehearsing a policy that was itself trained with "
     "teammates yields rollout data consistent with current team dynamics, damping non-stationarity "
-    "that classic fixed replay buffers would induce."
+    "that classic fixed replay buffers would induce — but that same coupling to the live team state "
+    "is a likely source of its higher variance."
 )
 p(
     "Limitations: single environment and task pair; moderate variance at low training budget (see "
-    "the seed sign-flip); one seed per mitigation condition; CPU-only scale; no task-ordering or "
-    "task-count generalization (tasks > 2 are explicitly flagged as out of scope in ADR-006). "
-    "Forgetting here is measured on the identical policy object — a within-episode, same-horizon "
-    "comparison — so results may not transfer to input-domain shifts (e.g. new landmarks or reward "
-    "structure), which remains future work."
+    "the seed sign-flip); only 3 seeds per mitigation condition — enough to see variance, not to "
+    "tightly bound it; CPU-only scale; no task-ordering or task-count generalization (tasks > 2 are "
+    "explicitly flagged as out of scope in ADR-006). Forgetting here is measured on the identical "
+    "policy object — a within-episode, same-horizon comparison — so results may not transfer to "
+    "input-domain shifts (e.g. new landmarks or reward structure), which remains future work."
 )
 
 # ---- 7. Conclusion -------------------------------------------------------- #
 h("7. Conclusion", 1)
 p(
     "On a small, partially observable, cooperative team, catastrophic forgetting after sequential "
-    "transfer is real, seed-dependent, and mitigable with lightweight mechanisms. Short interleaved "
-    "experience-replay bursts preserve (and even improve) old-task behaviour, early-layer freezing "
-    "provides a matrix-free regularization backstop, and the two together deliver the best "
-    "retention without hurting the new task. By keeping the experiment brittle — 11k parameters, "
-    "2 CPU cores, fully seeded RNGs — we produced an outcome anyone with the repository can "
-    "re-derive bit-for-bit, including an automated config-parity gate. This gives the community a "
-    "dependable, reproducible micro-benchmark for forgetting research in cooperative teams before "
-    "scaling to larger agents and longer task sequences."
+    "transfer is real, seed-dependent, and shifted — in opposite ways — by two lightweight "
+    "mechanisms. Short interleaved experience-replay bursts produce the largest mean improvement in "
+    "old-task retention but the most seed-to-seed variance; early-layer freezing produces a smaller "
+    "but far more consistent improvement; combined, they land close to the unmitigated baseline "
+    "rather than compounding. That non-additive interaction is itself a useful finding for anyone "
+    "choosing a mitigation strategy under a tight compute budget: pick freezing for predictability, "
+    "replay for expected magnitude, and do not assume stacking both is free. By keeping the "
+    "experiment brittle — 11k parameters, 2 CPU cores, fully seeded RNGs, 3-seed aggregation — we "
+    "produced an outcome anyone with the repository can re-derive bit-for-bit, including an "
+    "automated config-parity gate. This gives the community a dependable, reproducible "
+    "micro-benchmark for forgetting research in cooperative teams before scaling to larger agents "
+    "and longer task sequences."
 )
 
 # ---- 8. References -------------------------------------------------------- #
